@@ -1,0 +1,21 @@
+import { config } from 'dotenv';
+config();
+
+import { TypeOrmModuleOptions } from '@nestjs/typeorm';
+// Ensure the following file exists: src/database/entities/<%= service %>.entity.ts
+import { <%= serviceClass %> } from './entities/<%= service %>.entity';
+
+const dbUrl = new URL(process.env.DB_URL || '');
+
+export const typeOrmConfig: TypeOrmModuleOptions = {
+  type: 'mysql',
+  host: dbUrl.hostname,
+  port: Number(dbUrl.port),
+  username: dbUrl.username,
+  password: dbUrl.password,
+  database: dbUrl.pathname.replace('/', ''),
+  entities: [<%= serviceClass %>],
+  synchronize: true,
+  retryAttempts: 5,
+  retryDelay: 2000,
+};

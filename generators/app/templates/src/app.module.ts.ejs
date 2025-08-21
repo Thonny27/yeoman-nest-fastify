@@ -1,0 +1,27 @@
+import { Module } from '@nestjs/common';
+import { ConfigModule } from '@nestjs/config';
+import configuration from './config/configuration';
+import { <%= serviceClass %>Module } from './modules/<%= service %>/<%= service %>.module';
+import { LoggerModule } from './common/logger/logger.module';
+import { OAuthModule } from './common/oauth/oauth.module';
+import { ExampleModule } from './modules/example/example.module';
+import { CircuitBreakerModule } from './common/circuit-breaker/circuit-breaker.module';
+import { DatabaseModule } from './database/database.module';
+import { RedisModule } from './common/redis/redis.module';
+
+@Module({
+  imports: [
+    ConfigModule.forRoot({
+      isGlobal: true,
+      load: [configuration],
+    }),
+    ExampleModule,
+    LoggerModule,
+    OAuthModule,
+    <%= serviceClass %>Module,
+    CircuitBreakerModule,
+    DatabaseModule,
+    RedisModule
+  ],
+})
+export class AppModule {}

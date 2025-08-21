@@ -1,0 +1,23 @@
+import { Controller, Post, Body } from '@nestjs/common';
+import { <%= serviceClass %>Db } from '../model/<%= service %>Db';
+import { LoggerService } from '../../../../common/logger/logger.service';
+
+@Controller('<%= service %>')
+export class <%= serviceClass %>Controller {
+  constructor(private readonly logger: LoggerService) {}
+
+  @Post()
+  create(@Body() dto: <%= serviceClass %>Db) {
+    this.logger.log(`📥 Creando entidad: ${JSON.stringify(dto)}`);
+    return {
+      message: 'Entidad creada correctamente ✅',
+      data: dto,
+    };
+  }
+
+  @Post('error')
+  createError() {
+    this.logger.error('💥 Se va a lanzar un error a propósito');
+    throw new Error('Simulación de error interno');
+  }
+}

@@ -1,0 +1,15 @@
+import { Module } from '@nestjs/common';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { <%= serviceClass %>DbService } from './services/<%= service %>Db.service';
+import { RedisModule } from '../../common/redis/redis.module';
+import { <%= serviceClass %> } from '../../database/entities/<%= service %>.entity';
+import { HttpModule } from '@nestjs/axios';
+import { HttpClientController } from './controllers/http-client.controller';
+
+@Module({
+  imports: [TypeOrmModule.forFeature([<%= serviceClass %>]), RedisModule, HttpModule],
+  controllers: [HttpClientController],
+  providers: [<%= serviceClass %>DbService],
+  exports: [<%= serviceClass %>DbService],
+})
+export class <%= serviceClass %>Module {}

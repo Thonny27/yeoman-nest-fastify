@@ -1,0 +1,31 @@
+import { Injectable } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { <%= serviceClass %> } from '../../../database/entities/<%= service %>.entity';
+import { <%= serviceClass %>Db } from '../model/<%= service %>Db';
+import { RedisService } from '../../../common/redis/redis.service';
+
+@Injectable()
+export class <%= serviceClass %>DbService {
+  constructor(
+    @InjectRepository(<%= serviceClass %>)
+    private readonly repo: Repository<<%= serviceClass %>>,
+    private readonly redisService: RedisService,
+  ) {}
+
+  async create(dto: <%= serviceClass %>Db): Promise<<%= serviceClass %>> {
+    const entity = this.repo.create(dto);
+    const saved = await this.repo.save(entity);
+    await this.redisService.del('<%= service %>:all');
+    return saved;
+  }
+
+  async findAll(): Promise<<%= serviceClass %>[]> {
+    const cached = await this.redisService.get('<%= service %>:all');
+    if (cached) return JSON.parse(cached);
+
+    const entities = await this.repo.find();
+    await this.redisService.set('<%= service %>:all', JSON.stringify(entities), 60);
+    return entities;
+  }
+}
