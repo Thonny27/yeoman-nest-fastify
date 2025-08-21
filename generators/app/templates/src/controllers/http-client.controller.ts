@@ -1,40 +1,19 @@
 
 import { Controller, Get, Body, Post } from '@nestjs/common';
-import { HttpService } from '@nestjs/axios';
-import { firstValueFrom, timeout as rxTimeout, catchError, of } from 'rxjs';
+import { CircuitBreakerService } from '../../../common/circuit-breaker/circuit-breaker.service';
 import * as http from 'http';
 import * as https from 'https';
+import { appHttpConfig } from '../../../config/app-http.config';
 
-const httpAgent = new http.Agent({ keepAlive: true, maxSockets: 20 });
-const httpsAgent = new https.Agent({ keepAlive: true, maxSockets: 20 });
+const httpAgent = new http.Agent(appHttpConfig.httpClient.httpAgent);
+const httpsAgent = new https.Agent(appHttpConfig.httpClient.httpsAgent);
 
-// Formato propio de request
-export interface CustomRequest {
-  endpoints: Array<{
-    key: string;
-    url: string;
-    method: 'get' | 'post';
-    data?: any;
-  }>;
-}
-
-
-// Formato robusto y genérico de respuesta
-export interface ApiResponse<T = any> {
-  success: boolean;
-  timestamp: string;
-  path: string;
-  data: T;
-  meta: {
-    durationMs: number;
-    [key: string]: any;
-  };
-  errors: Array<{ key?: string; message: string; detail?: any }>;
-}
+import { ApiResponse } from '../interfaces/api-response.interface';
+import { CustomRequest } from '../interfaces/custom-request.interface';
 
 @Controller('http-client')
 export class HttpClientController {
-  constructor(private readonly http: HttpService) {}
+  constructor(private readonly circuitBreaker: CircuitBreakerService) {}
 
   // Ejemplo de orquestación, composición y agregación
   @Get('agregado')
@@ -147,30 +126,24 @@ export class HttpClientController {
       const config = {
         httpAgent,
         httpsAgent,
-        headers: { 'Accept': 'application/json' },
-        timeout: 2000,
+        headers: appHttpConfig.httpClient.headers,
+        timeout: appHttpConfig.httpClient.timeout,
       };
       let res;
       if (endpoint.method === 'get') {
-        res = await firstValueFrom(
-          this.http.get(endpoint.url, config).pipe(
-            rxTimeout({ first: 2000 }),
-            catchError(err => of({ data: null, error: err?.message || 'timeout or error' }))
-          )
-        );
+        res = await this.circuitBreaker.get(endpoint.url, config);
       } else {
-        res = await firstValueFrom(
-          this.http.post(endpoint.url, endpoint.data, config).pipe(
-            rxTimeout({ first: 2000 }),
-            catchError(err => of({ data: null, error: err?.message || 'timeout or error' }))
-          )
-        );
+        res = await this.circuitBreaker.post(endpoint.url, endpoint.data, config);
       }
       // Si la respuesta es un objeto de error
       if (res && typeof res === 'object' && 'error' in res) {
         return { data: null, error: (res as any).error };
       }
-      return { data: (res as any).data ?? res };
+      // axios responses: { data, ... }
+      if (res && typeof res === 'object' && 'data' in res) {
+        return { data: (res as any).data };
+      }
+      return { data: res };
     } catch (e) {
       return { data: null, error: e instanceof Error ? e.message : String(e) };
     }

@@ -64,6 +64,22 @@ module.exports = class extends Generator {
     fs.mkdirSync(moduleControllersPath, { recursive: true });
     fs.mkdirSync(moduleServicesPath, { recursive: true });
 
+    // Crear carpeta de interfaces dentro del módulo
+    const moduleInterfacesPath = path.join(destRoot, `src/modules/${service}/interfaces`);
+    fs.mkdirSync(moduleInterfacesPath, { recursive: true });
+
+    // Copiar interfaces base al módulo desde la plantilla
+    const interfaceFilesToCopy = [
+      { src: 'src/interfaces/api-response.interface.ts', dest: `src/modules/${service}/interfaces/api-response.interface.ts` },
+      { src: 'src/interfaces/custom-request.interface.ts', dest: `src/modules/${service}/interfaces/custom-request.interface.ts` },
+    ];
+    interfaceFilesToCopy.forEach(file => {
+      this.fs.copy(
+        this.templatePath(file.src),
+        this.destinationPath(path.join(destRoot, file.dest))
+      );
+    });
+
     // Esperar a que los archivos sean procesados por Yeoman antes de moverlos
     this.fs.commit(() => {
       // Definir controllers base a mover (sin incluir __service__.controller.ts si hay OpenAPI)
@@ -171,7 +187,7 @@ module.exports = class extends Generator {
         );
 
         // Copiar archivos de configuración y variables al nivel del módulo
-        const configFiles = ['configuration.ts', 'variables.ts'];
+        const configFiles = ['configuration.ts','app-http.config.ts', 'variables.ts'];
         configFiles.forEach(file => {
           const srcFile = path.join(outputDir, file);
           const destFile = path.join(modulePath, file);

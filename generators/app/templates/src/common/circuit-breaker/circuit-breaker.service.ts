@@ -15,11 +15,13 @@ export class CircuitBreakerService {
     });
 
     // ✅ 2. Aquí va el fallback
-    this.breaker.fallback((url: string) => {
+    this.breaker.fallback((url: string, method: string = 'get', data?: any) => {
       return {
         status: '⚠️ Fallback ejecutado',
         fallbackData: true,
         url,
+        method,
+        data,
       };
     });
 
@@ -29,13 +31,20 @@ export class CircuitBreakerService {
     this.breaker.on('halfOpen', () => console.log('🟡 Circuito en prueba'));
   }
 
-  // 🔁 Método que hace la request real
-  private async makeRequest(url: string, config?: any): Promise<any> {
+  // 🔁 Método que hace la request real (GET o POST)
+  private async makeRequest(url: string, method: string = 'get', data?: any, config?: any): Promise<any> {
+    if (method.toLowerCase() === 'post') {
+      return axios.post(url, data, config);
+    }
     return axios.get(url, config);
   }
 
-  // 🔥 Método expuesto
+  // 🔥 Métodos expuestos para GET y POST
   async get(url: string, config?: any) {
-    return this.breaker.fire(url, config);
+    return this.breaker.fire(url, 'get', undefined, config);
+  }
+
+  async post(url: string, data?: any, config?: any) {
+    return this.breaker.fire(url, 'post', data, config);
   }
 }

@@ -24,11 +24,11 @@
     "openapi-typescript-codegen": "^0.29.0",
     "swagger-parser": "^10.0.3",
     "yaml": "^2.8.0",
-    "yeoman-generator": "^5.8.0"
+    "yeoman-generator": "^5.10.0"
   },
   "devDependencies": {
     "@openapitools/openapi-generator-cli": "^2.21.4",
-    "typescript": "^5.0.0",
-    "rimraf": "^5.0.0"
+    "rimraf": "^5.0.0",
+    "typescript": "^5.0.0"
   }
 }
