@@ -141,10 +141,6 @@ module.exports = class extends Generator {
         dest: `src/modules/${service}/services/${service}Db.service.ts` // Renombrar a petDb.service.ts
       },
       {
-        src: `src/modules/example/dto/create-user.dto.ts`,
-        dest: `src/modules/${service}/model/${service}Db.ts` // Renombrar a petDb.ts para evitar conflicto
-      },
-      {
         src: `src/database/entities/user.entity.ts`,
         dest: `src/database/entities/${service}.entity.ts`
       }
@@ -217,6 +213,11 @@ module.exports = class extends Generator {
     }
 
     this.log(`✨ Project generated in '${destRoot}' with modular structure and OpenAPI support.`);
+
+    const globalInterfacesPath = path.join(destRoot, 'src/interfaces');
+    if (fs.existsSync(globalInterfacesPath)) {
+      fs.rmSync(globalInterfacesPath, { recursive: true, force: true });
+    }
   }
 
   createControllers(modulePath, serviceName) {

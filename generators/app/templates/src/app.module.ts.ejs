@@ -8,7 +8,6 @@ import { ExampleModule } from './modules/example/example.module';
 import { CircuitBreakerModule } from './common/circuit-breaker/circuit-breaker.module';
 import { DatabaseModule } from './database/database.module';
 import { RedisModule } from './common/redis/redis.module';
-import { CircuitBreakerModule } from './common/circuit-breaker/circuit-breaker.module';
 
 @Module({
   imports: [
@@ -22,8 +21,7 @@ import { CircuitBreakerModule } from './common/circuit-breaker/circuit-breaker.m
     <%= serviceClass %>Module,
     CircuitBreakerModule,
     DatabaseModule,
-    RedisModule,
-    CircuitBreakerModule
+    RedisModule
   ],
 })
 export class AppModule {}
